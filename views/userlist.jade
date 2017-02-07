@@ -1,0 +1,45 @@
+extends layout
+
+block style
+	style.
+		.content {
+			margin-top: 30px;
+		}
+		.grid {
+			height: 100px;
+			margin-bottom: 10px;
+			border-top: 1px solid #eee;
+			border-bottom: 1px solid #eee;
+		}
+		.avatar {
+			border-radius: 50%;
+		}
+
+block header
+	ul(class="nav navbar-nav")
+		li
+			a(href="/") 所有talk
+		- if(login)
+			li
+				a(href="/user/#{username}") 我的talk
+		li.active
+			a(href="/userlist") 成员列表
+	ul(class="nav navbar-nav navbar-right")
+		- if (!login)
+			li
+				a(href="/regist") 注册
+			li
+				a(href="/login") 登录
+		- else
+			li 
+				a 欢迎您, #{username}
+			include ./include/personalCenter
+
+block content
+	div.content
+		- for( var i = 0, len = users.length; i < len; i++)
+			div(class="col-md-4 grid")
+				h2
+					a(href="/user/#{users[i].username}")
+						img(class="avatar" src="/avatar/#{users[i].avatar}" width="40")
+						| #{users[i].username}

@@ -1,0 +1,147 @@
+extends layout
+
+block head
+	link(rel="stylesheet", href="/stylesheets/crop.css")
+	link(rel="stylesheet", href="/stylesheets/show.css")
+
+block header
+	ul(class="nav navbar-nav")
+		li
+			a(href="/") 所有talk
+		li
+			a(href="#") 我的talk
+		li
+			a(href="/userlist") 成员列表
+	ul(class="nav navbar-nav navbar-right")
+		- if (!login)
+			li
+				a(href="/regist") 注册
+			li
+				a(href="/login") 登录
+		- else
+			li 
+				a 欢迎您, #{username}
+			include ./include/personalCenter
+
+block content
+	h1 更改头像
+	form(class="jumbotron" enctype="multipart/form-data" id="fileForm")
+		div(class="form-group")
+			span 选择图片
+			input(type="file" class="form-control" id="file" name="img")
+		button(type="button" class="btn btn-default" id="upload") 上传
+
+	div(class="container" id="cropBorder")
+		div(class="row")
+			div(class="span12")
+				div(id="crop-demo-box")
+					div(class="crop-section")
+						div(class="preview-pane")
+							div(class="preview-container")
+								img(src="avatar/#{avatar}" class="crop-preview")
+						div(class="target-box")
+							div(class="target-container")
+								img(src="avatar/#{avatar}" class="target")
+							div(class="target-resize")
+					div(class="preview-section")
+					input(type="button" class="btn btn-default" value="确认修改" id="change")
+
+block script
+	script(src="/javascripts/crop.js")
+	script.
+		var config = {
+			showSize: {
+				circle: [100, 200],
+				square: [100]
+			}
+		};
+		var crop= new Crop(config);
+
+		$('#upload').click(function() {
+
+			var copypath = $('.target').attr('src');
+
+			if(/^avatar\/copy(\d)*\./.test(copypath)) {
+				$.post('/getcopypath', {
+					copypath: copypath
+				}, function(text) {
+					if(text === '-3') {
+						alert('服务器错误,请联系管理员');
+					}
+				});
+			}
+
+			$.ajax({
+				url: '/dosetavatar',
+				type: 'POST',
+				data: new FormData($('#fileForm')[0]),
+				cache: false,
+				contentType: false,
+				processData: false,
+				success: function(text) {
+					if(text === '-3') {
+						alert('服务器错误,请联系管理员');
+					} else if(text === '-1') {
+						alert('您还未上传文件');
+					} else {
+						var src = 'avatar/' + text,
+							width = 250,
+							demoBox = $('#crop-demo-box');
+
+						demoBox.html(templete(src));
+
+						demoBox.find('.target-box').find('.target').attr('src', src);
+						demoBox.find('.preview-container').find('.crop-preview').attr('src', src);
+						crop = new Crop(config);
+					}
+
+					$('#change').click(function() {
+						var pos = $('#crop-demo-box .target-box'),
+							target = pos.find('.target');
+
+						$.get('/docrop', {
+							file: text,
+							rw: target.width(),
+							rh: target.height(),
+							w: pos.width(),
+							h: pos.height(),
+							x: pos.position().left,
+							y: pos.position().top
+						}, function(text) {
+							if(text === '-1') {
+								alert('头像修改失败');
+							} else {
+								alert('头像修改成功');
+								window.location = '/';
+							}
+						});
+					});
+				}
+			});
+		});
+
+		$('#change').click(function() {
+			$.get('/docrop', function(text) {
+				if(text === '-2') {
+					alert('您还未上传文件');
+				}
+			});
+		});
+
+		function templete(src) {
+			return `<div class="crop-section">
+						<div class="preview-pane">
+							<div class="preview-container">
+								<img src="${src}" class="crop-preview">
+							</div>
+						</div>
+						<div class="target-box">
+							<div class="target-container">
+								<img src="${src}" class="target">
+							</div>
+							<div class="target-resize"></div>
+						</div>
+					</div>
+					<div class="preview-section"></div>
+					<input type="button" value="修改头像" id="change" class="btn btn-default">`;
+		}

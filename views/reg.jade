@@ -1,0 +1,63 @@
+extends layout
+
+block style
+	style.
+		.alert {
+			display: none;
+		}
+
+block header
+	ul(class="nav navbar-nav")
+		li
+			a(href="/") 所有talk
+		- if(login)
+			li
+				a(href="/user/#{username}") 我的talk
+		li
+			a(href="/userlist") 成员列表
+	ul(class="nav navbar-nav navbar-right")
+		li(class="active")
+			a(href="/regist") 注册
+		li
+			a(href="/login") 登录
+
+block content
+	h1 欢迎注册
+	form(role="form" class="jumbotron")
+		div(class="form-group")
+			label(for="usermane") 用户名
+			input(type="text" class="form-control" id="username" placeholder="用户名")
+		div(class="form-group")
+			label(for="password") 密码
+			input(type="password" class="form-control" id="password" placeholder="请输入密码,至少6位")
+		button(type="button" class="btn btn-default" id="reg") 注册
+	div(class="alert alert-success" role="alert")  注册成功,即将跳转到首页
+	div(class="alert alert-danger" role="alert")  用户名被占用
+
+block script
+	script.
+		$('#reg').click(function() {
+
+			$('input').focus( function() {
+				$('.alert').hide();
+			} );
+
+			$.post('/doReg', {
+				'username': $('#username').val(),
+				'password': $('#password').val(),
+			}, function(result) {
+				if(result === '1') {
+					// 注册成功
+					$('.alert-success').show();
+					setTimeout(function() {
+						window.location = '/';
+					}, 3000);
+				} else if(result === '-1') {
+					// 用户名被占用
+					$('.alert-danger').show().html('用户名被占用');
+				} else if(result === '-3') {
+					// 服务器错误
+					$('.alert-danger').show().html('服务器错误');
+				}
+			});
+		});

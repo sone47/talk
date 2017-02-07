@@ -1,0 +1,89 @@
+#crop-demo-box {
+	border: 1px solid #999;
+	border-radius: 5px;
+	padding: 10px;
+	overflow: hidden;
+	align-items: center;
+	display: flex;
+}
+
+#crop-demo-box .crop-section {
+	position: relative;
+	border: 1px solid #999;
+	background: #333;
+}
+
+#crop-demo-box .crop-section .preview-pane {
+	width: 100%;
+	height: 100%;
+}
+
+#crop-demo-box .crop-section .preview-pane .crop-preview {
+	opacity: 0.5;
+}
+
+#crop-demo-box .crop-section .target-box {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 40%;
+	height: 40%;
+}
+
+#crop-demo-box .crop-section .target-container {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	overflow: hidden;
+	cursor: move;
+}
+
+#crop-demo-box .crop-section .target-container .target {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+#crop-demo-box .crop-section .target-box .target-resize {
+	width: 5%;
+	height: 5%;
+	background: #fff;
+	border-radius: 50%;
+	border: 1px solid #000;
+	position: absolute;
+	left: 80%;
+	top: 85%;
+	cursor: se-resize;
+}
+
+#crop-demo-box .preview-section {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 20px;
+	padding-bottom: 0;
+	margin-left: 20px;
+	background: #f2f2f5;
+}
+
+#crop-demo-box .preview-section .preview-frame {
+	overflow: hidden;
+}
+
+#crop-demo-box .preview-section .circle-preview {
+	border-radius: 50%;
+}
+
+#crop-demo-box .preview-section .square-preview {
+	
+}
+
+#crop-demo-box .preview-section .show-size {
+	height: 30px;
+	width: 100%;
+	line-height: 30px;
+	color: #ccc;
+	font-size: 12px;
+	text-align: center;
+}

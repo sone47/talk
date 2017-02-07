@@ -1,0 +1,113 @@
+doctype html
+html(lang="en")
+	head
+		meta(charset="UTF-8")
+		meta(http-equiv="X-UA-Compatible" content="IE=edge")
+		meta(name="viewport" content="width=device-width, initial-scale=1")
+		meta(name="description" content="")
+		meta(name="author" content="sone")
+		link(rel="icon" href="./favicon.ico")
+
+		title Talk
+		
+		link(link href="/stylesheets/reset.css" rel="stylesheet")
+		link(link href="/stylesheets/bootstrap.min.css" rel="stylesheet")
+		link(link href="/stylesheets/jumbotron.css" rel="stylesheet")
+		link(link href="/stylesheets/chatroom.css" rel="stylesheet")
+
+		block head
+
+		style.
+			a:hover {
+				text-decoration: none;
+			}
+		block style
+
+	body
+		nav(class="navbar navbar-inverse navbar-fixed-top" role="navigation")
+			div(class="container")
+				div(class="navbar-header")
+					button(type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar")
+						span(class="sr-only") Toggle navigation
+						span(class="icon-bar")
+						span(class="icon-bar")
+						span(class="icon-bar")
+					a(class="navbar-brand" href="/") Talk
+				div(id="navbar" class="navbar-collapse collapse")
+					block header
+
+		block jumbotron
+		div(class="container" id="content")
+			div(class="row")
+				block content
+			hr
+
+			//- if(login)
+				div(id="chatroom")
+					p(class="msgNum")
+						a(href="javascript:")
+							|聊天室 <span class="badge">3</span></a>
+					div(class="chatroom")
+						aside(class="chatwith")
+							ul(class="chatlist")
+								li 
+									a(href="javascript:") sone
+								li
+									a(href="javascript:") sone
+						div(class="chatpanel")
+							h3 sone
+								span.close x
+							div.chatcontent
+								ul
+							textarea(class="message", name="", cols="30", rows="10", placeholder="enter to send")
+
+
+
+			footer
+				p &copy; Company 2016
+
+		script(src="/javascripts/jquery-3.1.0.min.js")
+		script(src="/javascripts/bootstrap.min.js")
+		script.
+			$('#exit').click(function() {
+				$.get('/exit', function(text) {
+					if(text === '1') {
+						window.location = '/';
+					}
+				});
+			});
+
+			// chatroom
+				// animation
+			$('#chatroom').click(function() {
+				var chatroom = $('.chatroom'),
+					msgNum = $('.msgNum');
+				if(chatroom.css('display') === 'none') {
+					chatroom.css('display', 'block');
+					msgNum.css('display', 'none');
+					$(this).css({
+						'width': '700px',
+						'height': '500px'
+					});
+				}
+			});
+			$('#chatroom .close').click(function(e) {
+				e.stopPropagation();
+
+				var chatroom = $('.chatroom'),
+					msgNum = $('.msgNum');
+
+				chatroom.css('display', 'none');
+				msgNum.css('display', 'block');
+				$('#chatroom').css({
+					'width': '',
+					'height': ''
+				});
+			});
+
+			function send() {
+				socket.emit('send', $('.message').val());
+				$('.message').val('');
+			}
+
+		block script

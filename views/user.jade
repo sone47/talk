@@ -1,0 +1,206 @@
+extends layout
+
+block style
+	style.
+		a {
+			color: #333;
+		}
+		dl {
+			margin-top: 20px;
+			position: relative;
+		}
+		dt {
+			margin-top: 10px;
+		}
+		dd {
+			border-bottom: 1px solid #ccc;
+		}
+		.grid {
+			height: 200px;
+			overflow: auto;
+			margin-bottom: 10px;
+			border-top: 1px solid #eee;
+			position: relative;
+		}
+		.avatar {
+			border-radius: 50%;
+		}
+		#content .content {
+			min-height: 630px;
+		}
+
+block header
+	ul(class="nav navbar-nav")
+		li
+			a(href="/") 所有talk
+		- if(login)
+			li
+				a(href="/user/#{mytalk}") 我的talk
+		li
+			a(href="/userlist") 成员列表
+	ul(class="nav navbar-nav navbar-right")
+		- if (!login)
+			li
+				a(href="/regist" id="regist") 注册
+			li
+				a(href="/login") 登录
+		- else
+			li 
+				a 欢迎您, #{mytalk}
+			include ./include/personalCenter
+
+block jumbotron
+	div(class="jumbotron")
+		div(class="container")
+			div.row
+				div
+					a(href="/user/#{username}")
+						img(src="/avatar/#{avatar}", alt="#{avatar}")
+					h2 #{username}的Talk
+
+block content
+	nav
+		ul.pagination
+			li.prev
+				a(href="javascript:void(0);") &laquo;
+			- for(var i = 0; i < Math.ceil(talkAmount/9); i++)
+				li.page(data-page="#{i+1}")
+					a(href="javascript:void(0);") #{i+1}
+			li.next
+				a(href="javascript:void(0);") &raquo;
+	div.content
+
+block script
+	script.
+		// Ajax读取文章列表
+		getPage(1);
+		$('.page').click(function() {
+			getPage($(this).attr('data-page'));
+		});
+		$('.prev').click(function() {
+			var pageNum = $('.pagination').attr('data-page'),
+				page = $('.page');
+			if(pageNum <= 1) {
+				return;
+			} else {
+				pageNum --;
+			}
+			getPage(pageNum);
+		});
+		$('.next').click(function() {
+			var pageNum = $('.pagination').attr('data-page'),
+				page = $('.page'),
+				length = page.length;
+			if(pageNum >= length) {
+				return;
+			} else {
+				pageNum ++;
+			}
+			getPage(pageNum);
+		});
+
+		// ajax获取页面
+		function getPage(page, waterfall) {
+			if(!waterfall) {
+				$('#content .content').html('');
+			}
+			$('.pagination').attr('data-page', page);
+			$('.page').eq(page - 1).addClass('active').siblings().removeClass('active');
+
+			$.get(`/userpage?page=${page}&user=#{username}`, function(result) {
+				result = result.result;
+				for(let i = 0; i < result.length; i++) {
+					templet(result[i]);
+				}
+			});
+		}
+		$(document).scroll(function() {
+			var docHeight = $(document).height(),
+				winHeight = $(window).height(),
+				scrollTop = $(document).scrollTop(),
+				length = $('.page').length;
+
+			if(docHeight - winHeight - scrollTop < 200 ) {
+				var page = parseInt($('.pagination').attr('data-page'));
+
+				if(page < length) {
+					getPage(++page, true);
+				}
+			}
+		});
+
+		$('#content').on('click', '.sendComment', function() {
+
+			if($('#regist')[0] !== undefined) {
+				alert('请登录后评论');
+				return;
+			}
+			var ele = this,
+				comment = $(this).parent().siblings('.comment').val(),
+				_id = $(this).parents('.grid').attr('data-id');
+
+			$.post('/comment', {
+				comment: comment,
+				_id: _id
+			}, function(text) {
+				if(text === '-3') {
+					alert('服务器错误,请联系管理员');
+				} else {
+					var name = text[0].name,
+						content = text[0].content,
+						time = text[0].time;
+					var commentList = `<dt><a href="/user/${name}">${name}</a>评论:</dt><dd>${content}<p class="text-right"><small>${time}</small></p></dd>`;
+					$(ele).parents('.grid').children('dl').prepend(commentList);
+					$(ele).parent().siblings('.comment').val('');
+				}
+			});
+		} );
+
+		// Talk模板
+		function templet(result) {
+			var username = result.username,
+				content = result.content,
+				time = result.time,
+				avatar = result.avatar,
+				_id = result._id,
+				comment = result.comment;
+			var add = $(`
+			<div class="col-md-12 grid" data-id=${_id}>
+				<h2>
+					<a href="/user/${username}">
+						<img class="avatar" src="/avatar/${avatar}" width="40">
+					</a>${username}说：
+				</h2>
+				<p>${content}</p>
+				<p class="text-right"><small>${time}</small></p>
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="input-group">
+							<input type="text" class="form-control comment">
+								<span class="input-group-btn">
+									<button class="btn btn-default sendComment" type="button">发表评论</button>
+								</span>
+						</div>
+					</div>
+				</div>
+				<dl></dl>
+			</div>`);
+			$('#content .content').prepend(add);
+			if(comment !== undefined) {
+				var commentList = '';
+				for(let i = 0, len = comment.length; i < len; i++) {
+					var name = comment[i].name,
+						content = comment[i].content,
+						time = comment[i].time;
+					commentList += `
+					<dt>
+						<a href="/user/${name}">${name}</a>
+						评论:
+					</dt>
+					<dd>${content}
+						<p class="text-right"><small>${time}</small></p>
+					</dd>`;
+				}
+				add.children('dl').append(commentList);
+			}
+		}
